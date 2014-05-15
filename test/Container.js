@@ -9,7 +9,7 @@ describe('Container', function () {
 
     it('should allow to register class: container.register("myService", function MyClass(){})', function () {
         var MyClass = function () {
-            
+
         }
         container.register('myService', MyClass);
     });
@@ -272,4 +272,27 @@ describe('Container', function () {
         (instance === null).should.be.true;
     })
 
+    it('should support Container.load()', function () {
+
+        var container = Container.load(
+            {
+                dir: __dirname + '/container1'
+            });
+
+        'dev_value'.should.equal(container.get('name'));
+        'value1'.should.equal(container.get('name1'));
+    })
+
+
+    it('should support Container.load() for env', function () {
+
+        var container = Container.load(
+            {
+                dir: __dirname + '/container1',
+                env: 'test'
+            });
+
+        'test_value'.should.equal(container.get('name'));
+        'value1'.should.equal(container.get('name1'));
+    })
 });

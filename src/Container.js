@@ -35,7 +35,7 @@ Container.extend(Container.prototype, {
     get: function (name) {
 
         // return self
-        if(name == 'container') return this;
+        if (name == 'container') return this;
 
         // if resolved return
         if (this._resolved.has(name)) return this._resolved.get(name);
@@ -108,9 +108,39 @@ Container.extend(Container.Hash.prototype, {
     }
 });
 
+Container.Loader = function (options) {
+
+    this.dir = '.';
+    this.env = 'dev';
+    this.name = 'container';
+
+    this.container = new Container();
+
+    Container.extend(this, options || {});
+}
+
+Container.extend(Container.Loader.prototype, {
+
+    configure: function (name) {
+
+        var fs = require('fs');
+
+        var path = this.dir + '/' + name;
+
+        if (fs.existsSync(path) && Container.isFunction(require(path)))
+            require(path)(this.container);
+    },
+
+    load: function () {
+
+        this.configure(this.name + '.js');
+        this.configure(this.name + '_' + this.env + '.js');
+
+        return this.container;
+    }
+});
 
 // Tools
-
 Container.extend(Container, {
     isFunction: function (value) {
         return value instanceof Function;
@@ -124,6 +154,9 @@ Container.extend(Container, {
         bind.prototype = _class.prototype;
 
         return bind;
+    },
+    load: function (options) {
+        return new Container.Loader(options).load();
     }
 });
 
