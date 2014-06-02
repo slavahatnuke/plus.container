@@ -295,4 +295,19 @@ describe('Container', function () {
         'test_value'.should.equal(container.get('name'));
         'value1'.should.equal(container.get('name1'));
     })
+
+    it('should support Container.load() with default services', function () {
+
+        var container = Container.load(
+            {
+                dir: __dirname + '/container1',
+                services: {
+                    service1: 'hi'
+                }
+            });
+
+        'dev_value'.should.equal(container.get('name'));
+        'hi'.should.equal(container.get('service1'));
+    })
+
 });

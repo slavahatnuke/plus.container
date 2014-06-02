@@ -113,6 +113,7 @@ Container.Loader = function (options) {
     this.dir = '.';
     this.env = 'dev';
     this.name = 'container';
+    this.services = {};
 
     this.container = new Container();
 
@@ -131,7 +132,13 @@ Container.extend(Container.Loader.prototype, {
             require(path)(this.container);
     },
 
+    registerServices: function () {
+        for (var name in this.services)
+            this.container.register(name, this.services[name]);
+    },
     load: function () {
+
+        this.registerServices();
 
         this.configure(this.name + '.js');
         this.configure(this.name + '_' + this.env + '.js');
