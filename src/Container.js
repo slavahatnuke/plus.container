@@ -118,6 +118,9 @@ Container.Loader = function (options) {
     this.container = new Container();
 
     Container.extend(this, options || {});
+
+    if(!Container.isArray(this.dir))
+        this.dir = [this.dir];
 }
 
 Container.extend(Container.Loader.prototype, {
@@ -126,10 +129,15 @@ Container.extend(Container.Loader.prototype, {
 
         var fs = require('fs');
 
-        var path = this.dir + '/' + name;
+        this.dir.forEach(function (dir) {
 
-        if (fs.existsSync(path) && Container.isFunction(require(path)))
-            require(path)(this.container);
+            var path = dir + '/' + name;
+
+            if (fs.existsSync(path) && Container.isFunction(require(path)))
+                require(path)(this.container);
+
+        }.bind(this));
+
     },
 
     registerServices: function () {
@@ -151,6 +159,9 @@ Container.extend(Container.Loader.prototype, {
 Container.extend(Container, {
     isFunction: function (value) {
         return value instanceof Function;
+    },
+    isArray: function (value) {
+        return Object.prototype.toString.call( value ) === '[object Array]';
     },
     bind: function (_class, args) {
 

@@ -284,6 +284,17 @@ describe('Container', function () {
     })
 
 
+    it('should support Container.load() for many folders', function () {
+
+        var container = Container.load(
+            {
+                dir: [__dirname + '/container2', __dirname + '/container2.1']
+            });
+
+        'value1'.should.equal(container.get('name1'));
+        'value2.1'.should.equal(container.get('name2'));
+    })
+
     it('should support Container.load() for env', function () {
 
         var container = Container.load(
