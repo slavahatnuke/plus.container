@@ -321,4 +321,25 @@ describe('Container', function () {
         'hi'.should.equal(container.get('service1'));
     })
 
+    it('should support search by tags', function () {
+
+        var container = Container.load(
+            {
+                dir: __dirname + '/container3'
+            });
+
+        var tag1services = container.find(['tag1']);
+        var tag12services = container.find(['tag1', 'tag2']);
+        var tag0services = container.find(['tag0']);
+
+        tag1services.length.should.equal(2);
+        tag12services.length.should.equal(1);
+        tag0services.length.should.equal(0);
+
+        tag1services[0].should.deep.equal({CLASS: 1});
+        tag12services[0].should.deep.equal({CLASS: 2});
+
+        tag1services[1].should.deep.equal({CLASS: 2});
+    })
+
 });

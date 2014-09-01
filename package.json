@@ -1,7 +1,7 @@
 {
   "name": "plus.container",
-  "version": "1.0.3",
-  "description": "",
+  "version": "1.0.4",
+  "description": "Dependency Injection Container",
   "main": "src/Container.js",
   "scripts": {
     "test": "node_modules/.bin/mocha -R spec",
@@ -10,8 +10,8 @@
   "author": "slava hatnuke",
   "license": "BSD",
   "devDependencies": {
-    "chai": "~1.9.1",
-    "mocha": "~1.18.2",
-    "istanbul": "~0.2.8"
+    "chai": "1.9.1",
+    "mocha": "1.18.2",
+    "istanbul": "0.2.8"
   }
 }

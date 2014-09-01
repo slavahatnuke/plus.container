@@ -15,6 +15,7 @@ Container.extend(Container.prototype, {
         this._resolved = new Container.Hash();
         this._register = new Container.Hash();
         this._dependencies = new Container.Hash();
+        this._tags = new Container.Hash();
     },
     register: function (name, definition, dependencies) {
 
@@ -24,6 +25,7 @@ Container.extend(Container.prototype, {
         if (Container.isFunction(definition)) {
             this._register.set(name, definition);
             this._dependencies.set(name, dependencies || definition.$inject);
+            this._tags.set(name, definition.$tags || []);
         }
         else {
             this.set(name, definition);
@@ -81,7 +83,32 @@ Container.extend(Container.prototype, {
         this._register.remove(name);
         this._resolved.remove(name);
         this._dependencies.remove(name);
+        this._tags.remove(name);
+    },
+
+
+    find: function (names) {
+
+        var self = this;
+
+        var result = [];
+
+        this._tags.each(function (tags, name) {
+
+            var found = true;
+
+            Container.each(names, function (name) {
+                if (tags.indexOf(name) < 0)
+                    found = false;
+            });
+
+            if (found)
+                result.push(self.get(name));
+        });
+
+        return result;
     }
+
 });
 
 // class Hash
@@ -105,6 +132,10 @@ Container.extend(Container.Hash.prototype, {
     },
     remove: function (name) {
         return this.has(name) && delete this.hash[name];
+    },
+    each: function (fn) {
+        for (var i in this.hash)
+            fn(this.hash[i], i);
     }
 });
 
@@ -119,7 +150,7 @@ Container.Loader = function (options) {
 
     Container.extend(this, options || {});
 
-    if(!Container.isArray(this.dir))
+    if (!Container.isArray(this.dir))
         this.dir = [this.dir];
 }
 
@@ -161,7 +192,16 @@ Container.extend(Container, {
         return value instanceof Function;
     },
     isArray: function (value) {
-        return Object.prototype.toString.call( value ) === '[object Array]';
+        return Object.prototype.toString.call(value) === '[object Array]';
+    },
+    each: function (hash, fn) {
+        if (Container.isArray(hash)) {
+            for (var i = 0; i < hash.length; i++)
+                fn(hash[i], i);
+        }
+        else {
+            new Container.Hash(hash).each(fn);
+        }
     },
     bind: function (_class, args) {
 
