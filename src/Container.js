@@ -180,15 +180,13 @@ Container.extend(Container.Loader.prototype, {
 
         var fs = require('fs');
 
-        this.dir.forEach(function (dir) {
-
+        Container.each(this.dir, function (dir) {
             var path = dir + '/' + name;
 
             if (fs.existsSync(path) && Container.isFunction(require(path)))
                 require(path)(this.container);
 
         }.bind(this));
-
     },
 
     registerServices: function () {
