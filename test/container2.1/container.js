@@ -1,4 +1,6 @@
 module.exports = function (container) {
-    container.register('name1', 'value1');
-    container.register('name2', 'value2.1');
+
+    container.register('name2', {value: 2.2});
+    container.register('name3', {value: 3.2});
+
 }

@@ -288,11 +288,22 @@ describe('Container', function () {
 
         var container = Container.load(
             {
+                dir: [__dirname + '/container2']
+            });
+
+        container.get('name1').should.deep.equal({value: 1});
+        container.get('name2').should.deep.equal({value: 2});
+        (container.get('name3') == null).should.be.ok;
+
+        var container = Container.load(
+            {
                 dir: [__dirname + '/container2', __dirname + '/container2.1']
             });
 
-        'value1'.should.equal(container.get('name1'));
-        'value2.1'.should.equal(container.get('name2'));
+        container.get('name1').should.deep.equal({value: 1});
+        container.get('name2').should.deep.equal({value: 2.2});
+        container.get('name3').should.deep.equal({value: 3.2});
+
     })
 
     it('should support Container.load() for env', function () {
