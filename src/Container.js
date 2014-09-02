@@ -87,7 +87,7 @@ Container.extend(Container.prototype, {
     },
 
 
-    find: function (names) {
+    find: function (include, exclude) {
 
         var self = this;
 
@@ -97,8 +97,13 @@ Container.extend(Container.prototype, {
 
             var found = true;
 
-            Container.each(names, function (name) {
+            Container.each(include || [], function (name) {
                 if (tags.indexOf(name) < 0)
+                    found = false;
+            });
+
+            Container.each(exclude || [], function (name) {
+                if (tags.indexOf(name) >= 0)
                     found = false;
             });
 
@@ -107,6 +112,17 @@ Container.extend(Container.prototype, {
         });
 
         return result;
+    },
+    merge: function (container) {
+        if (container instanceof Container) {
+            this._resolved.merge(container._resolved);
+            this._register.merge(container._register);
+            this._dependencies.merge(container._dependencies);
+            this._tags.merge(container._tags);
+        }
+    },
+    load: function (options) {
+        this.merge(Container.load(options));
     }
 
 });
@@ -136,6 +152,10 @@ Container.extend(Container.Hash.prototype, {
     each: function (fn) {
         for (var i in this.hash)
             fn(this.hash[i], i);
+    },
+    merge: function (hash) {
+        if (hash instanceof Container.Hash)
+            Container.extend(this.hash, hash.hash);
     }
 });
 

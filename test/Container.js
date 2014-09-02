@@ -307,6 +307,17 @@ describe('Container', function () {
         'value1'.should.equal(container.get('name1'));
     })
 
+    it('should support container.load() sub container', function () {
+
+        container.register('x', 1);
+        container.register('y', 2);
+
+        container.load({dir: __dirname + '/container4'});
+
+        container.get('x').should.equal(1);
+        container.get('y').should.equal(3);
+    })
+
     it('should support Container.load() with default services', function () {
 
         var container = Container.load(
@@ -340,6 +351,39 @@ describe('Container', function () {
         tag12services[0].should.deep.equal({CLASS: 2});
 
         tag1services[1].should.deep.equal({CLASS: 2});
+    })
+
+    it('should support search by tags and exclude tags', function () {
+
+        var container = Container.load(
+            {
+                dir: __dirname + '/container3'
+            });
+
+        var tag1services = container.find(['tag1']);
+        tag1services.length.should.equal(2);
+
+        tag1services[0].should.deep.equal({CLASS: 1});
+        tag1services[1].should.deep.equal({CLASS: 2});
+
+        var tag1minus2services = container.find(['tag1'], ['tag2']);
+        tag1minus2services.length.should.equal(1);
+
+        tag1services[0].should.deep.equal({CLASS: 1});
+    })
+
+    it('should allow to merge containers', function () {
+
+        var container1 = new Container();
+        var container2 = new Container();
+
+        container1.register('x', 1);
+        container2.register('y', 2);
+
+        container1.merge(container2);
+
+        container1.get('x').should.equal(1);
+        container1.get('y').should.equal(2);
     })
 
 });
