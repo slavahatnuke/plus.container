@@ -1,7 +1,7 @@
 {
   "name": "plus.container",
-  "version": "1.0.8",
-  "description": "Dependency Injection Container",
+  "version": "1.0.9",
+  "description": "Dependency Injection Container - plus.container",
   "main": "src/Container.js",
   "scripts": {
     "test": "node_modules/.bin/mocha -R spec",
