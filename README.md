@@ -163,7 +163,7 @@ This code load container.js code in this order:
 
 If we use environment it looks like:
 
-`NDOE_ENV=test node app.js`
+`NODE_ENV=test node app.js`
 
 in this case it loads container in this order:
 - `container.js` // register common services
