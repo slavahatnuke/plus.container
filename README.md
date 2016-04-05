@@ -181,3 +181,6 @@ If we use environment it looks like:
 in this case it loads container in this order:
 - `container.js` // register common services
 - `container_test.js` // register environment dependent services or you can override common services
+
+Have a fun and manage your services!
+[+1G Team](http://plus1generation.com)
