@@ -354,7 +354,10 @@ Container.extend(Container, {
         if (Container.isClass(_class)) {
 
             var bind = function () {
-                var a = _args.map((x, idx) => `_args[${idx}]`);
+                var a = _args.map(function (value, idx) {
+                    return '_args[' + idx + ']';
+                });
+
                 var code = `new _class(${a.join(', ')})`;
                 return eval(code);
             };
