@@ -1,6 +1,6 @@
 {
   "name": "plus.container",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Dependency Injection Container - plus.container",
   "main": "src/Container.js",
   "homepage": "https://bitbucket.org/slavahatnuke/plus.container",

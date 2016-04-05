@@ -104,7 +104,21 @@ var service2 = container.get('myService2');
     // tag1_minus_tag2_services.length == 1, we will see Class1 instance
 
 ```
-
+## Nested access
+```
+   var config = {
+        host: 'yyy.com',
+        db: {
+            host: 'localhost'
+        }
+   } 
+   
+   container.register('config', config);
+   container.get('config/host'); // yyy.com
+   container.get('config/db/host'); // localhost
+   
+   
+```
 ## Loading services with environment
 
 
