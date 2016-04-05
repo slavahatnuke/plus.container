@@ -8,7 +8,7 @@ Allows to manage services and inject dependencies.
 ## Simple usage
 
 
-```
+```javascript
 var Container = require('plus.container');
 var container = new Container();
 ```
@@ -16,7 +16,7 @@ var container = new Container();
 ### Register service and use
 
 
-```
+```javascript
 
 
 // define your class
@@ -35,7 +35,7 @@ var service = container.get('myService');
 
 ### Inject dependencies
 
-```
+```javascript
 
 // define your classes
 var MyClass1 = function () {
@@ -82,7 +82,7 @@ var service2 = container.get('myService2');
 
 ## Tags, you can find/filter services by tags
 
-```
+```javascript
 
     var Class1 = function(){ return {CLASS: 1} }
     Class1.$tags = ['tag1'];
@@ -105,7 +105,7 @@ var service2 = container.get('myService2');
 
 ```
 ## Nested access
-```
+```javascript
    var config = {
         host: 'yyy.com',
         db: {
@@ -132,7 +132,7 @@ var service2 = container.get('myService2');
 `-- container_test.js
 ```
 
-```
+```javascript
 
 // container.js example
 
@@ -147,20 +147,20 @@ module.exports = function (container) {
 
 ```
 
-### Using
+### Usage
 
 
 Your application's code.
 
-```
+```javascript
 // app.js
 
-        // loading container from the folder, it allows to manage environments
-        var container = Container.load(
-            {
-                dir: __dirname,
-                env: process.env.NODE_ENV || 'dev'
-            });
+// loading container from the folder, it allows to manage environments
+var container = Container.load(
+{
+    dir: __dirname,
+    env: process.env.NODE_ENV || 'dev'
+});
 
 ```
 
