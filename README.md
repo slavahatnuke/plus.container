@@ -57,27 +57,26 @@ var service2 = container.get('myService2');
 
 ```
 
-### Factory service
+## ES6 Support
 
-```
+```javascript
+        "use strict";
 
-// define your classes
-var MyClass1 = function () {
+        class MyService {
+            constructor(a, b) {
+                this.a = a;
+                this.b = b;
+            }
+        }
 
-}
+        container.register('A', 'AA');
+        container.register('B', 'BB');
+        container.register('myService', MyService, ['A', 'B']);
 
-var MyClass2 = function (/* dep1, dep2 */) {
-    return function() { new MyClass1(/* dep1, dep2 */) }
-}
-
-container.register('myService1', MyClass1);
-container.register('myService2', MyClass2);
-
-var service2factory = container.get('myService2');
-var service1 = service2factory();
-
-// service1.should.be.instanceof(MyClass1);
-// Service 2 is factory, it returns function and you can call this to make new instances;
+        var instance = container.get('myService');
+        // instance.should.be.instanceof(MyService);
+        // "AA".should.equal(instance.a);
+        // "BB".should.equal(instance.b);
 
 ```
 

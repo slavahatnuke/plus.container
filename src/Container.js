@@ -85,7 +85,7 @@ Container.extend(Container.prototype, {
             args.push(this.get($inject[i]));
 
         // make creator with args
-        var creator = Container.bind(_class, args);
+        var creator = Container.makeCreator(_class, args);
 
         // create
         return new creator();
@@ -332,6 +332,9 @@ Container.extend(Container, {
     isFunction: function (value) {
         return value instanceof Function;
     },
+    isClass: function (value) {
+        return typeof value === 'function' && /^\s*class\s+/.test(value.toString());
+    },
     isArray: function (value) {
         return Object.prototype.toString.call(value) === '[object Array]';
     },
@@ -345,6 +348,27 @@ Container.extend(Container, {
         }
         else {
             new Container.Hash(hash).each(fn);
+        }
+    },
+    makeCreator: function (_class, _args) {
+        if (Container.isClass(_class)) {
+
+            var bind = function () {
+                var a = _args.map((x, idx) => `_args[${idx}]`);
+                var code = `new _class(${a.join(', ')})`;
+                return eval(code);
+            };
+
+            return bind;
+
+        } else {
+            function bind() {
+                return _class.apply(this, _args);
+            }
+
+            bind.prototype = _class.prototype;
+
+            return bind;
         }
     },
     bind: function (_class, args) {

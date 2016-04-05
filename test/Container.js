@@ -178,7 +178,7 @@ describe('Container', function () {
         };
 
         function MyClassFactory() {
-            return  MyClass
+            return MyClass
         }
 
 
@@ -475,6 +475,28 @@ describe('Container', function () {
         "value3".should.equal(aHash['name3']['name1']);
 
     });
+
+    it('should support es6 class', function () {
+        "use strict";
+
+        class MyService {
+            constructor(a, b) {
+                this.a = a;
+                this.b = b;
+            }
+        }
+
+        container.register('A', 'AA');
+        container.register('B', 'BB');
+        container.register('myService', MyService, ['A', 'B']);
+
+        var instance = container.get('myService');
+
+        instance.should.be.instanceof(MyService);
+
+        "AA".should.equal(instance.a);
+        "BB".should.equal(instance.b);
+    })
 
 
 });
