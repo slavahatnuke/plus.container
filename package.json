@@ -1,10 +1,10 @@
 {
   "name": "plus.container",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "Dependency Injection Container - plus.container",
   "main": "src/Container.js",
-  "homepage": "https://bitbucket.org/slavahatnuke/plus.container",
-  "repository" : { "type" : "git" , "url" : "git@bitbucket.org:slavahatnuke/plus.container.git"},
+  "homepage": "https://github.com/slavahatnuke/plus.container",
+  "repository" : { "type" : "git" , "url" : "git@github.com:slavahatnuke/plus.container.git"},
   "scripts": {
     "test": "node_modules/.bin/mocha -R spec",
     "cover": "node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -R spec"
