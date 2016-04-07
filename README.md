@@ -25,8 +25,10 @@ container.register('myService', MyClass);
 
 var service = container.get('myService'); // get service
 // service.should.be.instanceof(MyClass); 
+
 // it equals: var service = new MyClass();
 // BUT: container.get('myService') === container.get('myService') // true
+// it creates single instance of service
 ```
 
 ### Inject dependencies
@@ -45,6 +47,7 @@ container.register('myService2', MyClass2, ['myService1']);
 var service2 = container.get('myService2');
 // service2.should.be.instanceof(MyClass2);
 // it equals: var service2 = new MyClass2(new MyClass1());
+
 // BUT: container.get('myService2') === container.get('myService2'); // true
 // it creates single instance of service
 ```
@@ -171,6 +174,7 @@ container.get('service1') // it equals new Class1()
 container.get('service2') // it equals new Class2()
 container.get('service3') // it equals new Service3(new Class1())
 container.get('service4') // it equals new Service4(new Class1(), new Class2())
+
 // BUT: container.get('service4') === container.get('service4') // true // :)
 ```
 
