@@ -20,26 +20,27 @@ Container.extend(Container.prototype, {
         this._register = new Container.Hash();
         this._dependencies = new Container.Hash();
         this._tags = new Container.Hash();
-        this._parrentGetter = null;
+        this._parentGetter = null;
 
         this._accesor = new Container.Accessor();
-        this._difiners = new Container.Hash();
+        this._properties = new Container.Hash();
     },
     add: function (name, definition, dependencies) {
         return this.register(name, definition, dependencies);
     },
     provide: function (name, definition, dependencies) {
-        if (Container.isFunction(definition) && Container.isPureObject(dependencies)) {
-            definition.$injectMap = dependencies;
+        if (Container.isFunction(definition)) {
+            definition.$injectMap = dependencies || {};
         }
 
         return this.register(name, definition, ['container']);
     },
     register: function (name, definition, dependencies) {
-        this._define(name);
 
         // clean up
         this.remove(name);
+
+        this._defineProperty(name);
         this._defineParentGetter(definition);
 
         if (Container.isFunction(definition)) {
@@ -55,6 +56,7 @@ Container.extend(Container.prototype, {
         return this;
     },
     get: function (name) {
+        // console.log('>get name', name);
 
         // return self
         if (name == 'container') return this;
@@ -66,10 +68,11 @@ Container.extend(Container.prototype, {
         // if resolved return
         if (this._resolved.has(name)) return this._resolved.get(name);
 
+        // console.log('>>>>> name', name);
         // if not registered return null
         if (!this._register.has(name)) {
-            if(Container.isFunction(this._parrentGetter)) {
-                return this._parrentGetter(name);
+            if (Container.isFunction(this._parentGetter)) {
+                return this._parentGetter(name);
             }
             return null;
         }
@@ -85,76 +88,6 @@ Container.extend(Container.prototype, {
             return this._accesor.set(this, name, definition);
 
         this._resolved.set(name, definition);
-    },
-    _define: function (name) {
-        var container = this;
-
-        if (Container.isFunction(Object.defineProperty) && !container._difiners.has(name)) {
-            container._difiners.set(name, name);
-
-            Object.defineProperty(container, name, {
-                get: function () {
-                    return container.get(name);
-                }
-            });
-        }
-    },
-    _createMapInjected: function (name) {
-        var _class = this._register.get(name);
-        var map = _class.$injectMap || {};
-
-        var container = this;
-        var containerWrapper = {};
-
-        container._difiners.each(function (name) {
-            if (Container.isFunction(Object.defineProperty)) {
-                Object.defineProperty(containerWrapper, name, {
-                    get: function () {
-                        var mappedName = map[name] || name;
-                        return container.get(mappedName);
-                    }
-                });
-            }
-        });
-
-        var args = [containerWrapper];
-        // make creator with args
-        var creator = Container.makeCreator(_class, args);
-
-        // create
-        return creator();
-    },
-    _createArrayInjected: function (name) {
-        // get class
-        var _class = this._register.get(name);
-
-        // get names
-        var $inject = this._dependencies.has(name) ? this._dependencies.get(name) : [];
-
-        // args collection
-        var args = [];
-
-        // collect args
-        for (var i = 0; i < $inject.length; i++) {
-            args.push(this.get($inject[i]));
-        }
-
-        // make creator with args
-        var creator = Container.makeCreator(_class, args);
-
-        // create
-        return new creator();
-    },
-    _setParrentGetter: function (getter) {
-        this._parrentGetter = getter;
-    },
-    _defineParentGetter: function (definition) {
-        if (Container.isContainer(definition)) {
-            var container = this;
-            definition._setParrentGetter(function (name) {
-                return container.get(name);
-            });
-        }
     },
     create: function (name) {
 
@@ -178,8 +111,6 @@ Container.extend(Container.prototype, {
         this._dependencies.remove(name);
         this._tags.remove(name);
     },
-
-
     find: function (include, exclude) {
 
         var self = this;
@@ -216,6 +147,93 @@ Container.extend(Container.prototype, {
     },
     load: function (options) {
         this.merge(Container.load(options));
+    },
+    _defineProperty: function (name) {
+        var container = this;
+
+        var hasSupport = Container.isFunction(Object.defineProperty);
+        var isNotDefined = !container._properties.has(name);
+        var isNotOwnMethod = !container[name] || true;
+
+        if (hasSupport && isNotDefined && isNotOwnMethod) {
+            container._properties.set(name, name);
+
+            Object.defineProperty(container, name, {
+                get: function () {
+                    return container.get(name);
+                }
+            });
+        }
+    },
+    _getPropertyContainer: function (map) {
+        map = map || {};
+
+        var container = this;
+        var wrapper = {};
+
+        container._properties.each(function (name) {
+            if (Container.isFunction(Object.defineProperty)) {
+                Object.defineProperty(wrapper, name, {
+                    get: function () {
+                        var mappedName = map[name] || name;
+                        return container.get(mappedName);
+                    }
+                });
+            }
+        });
+
+        return wrapper;
+    },
+    _createMapInjected: function (name) {
+        var _class = this._register.get(name);
+        var map = _class.$injectMap || {};
+        var wrapper = this._getPropertyContainer(map);
+
+        var args = [wrapper];
+        // make creator with args
+        var creator = Container.makeCreator(_class, args);
+
+        // create
+        return creator();
+    },
+    _createArrayInjected: function (name) {
+        // get class
+        var _class = this._register.get(name);
+
+        // get names
+        var $inject = this._dependencies.has(name) ? this._dependencies.get(name) : [];
+
+        // args collection
+        var args = [];
+
+        // collect args
+        for (var i = 0; i < $inject.length; i++) {
+            args.push(this.get($inject[i]));
+        }
+
+        // make creator with args
+        var creator = Container.makeCreator(_class, args);
+
+        // create
+        return new creator();
+    },
+    _setParent: function (parent) {
+        var container = this;
+
+        this._parentGetter = function (name) {
+            return parent.get(name);
+        };
+
+        // console.log(parent);
+        //
+        // parent._properties.each(function (name) {
+        //     container._defineProperty(name)
+        // });
+    },
+    _defineParentGetter: function (childContainer) {
+        if (Container.isContainer(childContainer)) {
+            childContainer._setParent(this);
+        }
     }
 });
 
