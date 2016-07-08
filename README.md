@@ -13,46 +13,7 @@ var Container = require('plus.container');
 var container = new Container();
 ```
 
-### Register service and use
-
-
-```javascript
-// define your class
-var MyClass = function () {}
-
-// register in container
-container.register('myService', MyClass);
-
-var service = container.get('myService'); // get service
-// service.should.be.instanceof(MyClass); 
-
-// it equals: var service = new MyClass();
-// BUT: container.get('myService') === container.get('myService') // true
-// it creates single instance of service
-```
-
-### Inject dependencies
-
-```javascript
-// define your classes
-var MyClass1 = function () {}
-var MyClass2 = function (myService1) {
-    // myService1.should.be.instanceof(MyClass1);
-}
-
-// register in container
-container.register('myService1', MyClass1);
-container.register('myService2', MyClass2, ['myService1']);
-
-var service2 = container.get('myService2');
-// service2.should.be.instanceof(MyClass2);
-// it equals: var service2 = new MyClass2(new MyClass1());
-
-// BUT: container.get('myService2') === container.get('myService2'); // true
-// it creates single instance of service
-```
-
-## ES6 Support
+## ES6
 ```javascript
         "use strict";
 
@@ -73,6 +34,92 @@ var service2 = container.get('myService2');
         // "BB".should.equal(instance.b);
 ```
 Behaviour with ES6 is same as ES5 "classes" you can mix ES5 and ES6 services too.
+
+## ES6 provide/injection and custom mapping
+Examples with dependency injection for ES6/ES2015
+
+#### Dependency injection ES6 way.
+```javascript
+/// example 1 // 
+
+container.add('a', 1);
+container.add('b', 2);
+
+container.provide('c', (({a, b}) => {
+    return {
+        result: a + b
+    };
+}));
+
+console.log('c', container.get('c'));
+console.log('c', container.c); // container.c it is alias for container.get('c')
+// c { result: 3 }
+// c { result: 3 }
+```
+When we ask `c` it means that container will inject service `a` and `b` to the `c` and we will see result.
+It means `c` service will get to arguments `c(a, b)` looks cool :)
+
+#### Dependency injection ES6 way with mapping.
+```
+// exmaple 2 with mapping
+container.add('a', 1);
+container.add('b', 2);
+container.add('customA', 7);
+
+container.provide('c', (({a, b}) => {
+    return {
+        result: a + b
+    };
+}), {
+    a: 'customA'
+});
+
+
+console.log('c', container.get('c'));
+console.log('c', container.c); // container.c it is alias for container.get('c')
+// c { result: 9 }
+// c { result: 9 }
+```
+
+It means `c` service will get to arguments `c(customA, b)` it means that we can provide custom implementation to `c` service.
+
+### Register service and use ES5 examples
+
+
+```javascript
+// define your class
+var MyClass = function () {}
+
+// register in container
+container.register('myService', MyClass);
+
+var service = container.get('myService'); // get service
+// service.should.be.instanceof(MyClass); 
+
+// it equals: var service = new MyClass();
+// AND: container.get('myService') === container.get('myService') // true
+```
+
+### Inject dependencies
+
+```javascript
+// define your classes
+var MyClass1 = function () {}
+var MyClass2 = function (myService1) {
+    // myService1.should.be.instanceof(MyClass1);
+}
+
+// register in container
+container.register('myService1', MyClass1);
+container.register('myService2', MyClass2, ['myService1']);
+
+var service2 = container.get('myService2');
+// service2.should.be.instanceof(MyClass2);
+// it equals: var service2 = new MyClass2(new MyClass1());
+
+// AND: container.get('myService2') === container.get('myService2'); // true
+```
+
 ## Nested access
 ```javascript
    var config = {
@@ -194,3 +241,19 @@ in this case it loads container in this order:
 
 Have a fun and manage your services!
 [+1G Team](http://plus1generation.com)
+
+### Misc
+
+#### Aliases 
+
+##### Services registration
+```javascript
+container.register(name, definition, deps) 
+container.add(name, definition, deps) /// same
+```
+
+##### Container creating
+```javascript
+var container = new Container();
+var container = require('plus.container').create() //same
+```

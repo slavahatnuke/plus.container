@@ -498,5 +498,57 @@ describe('Container', function () {
         "BB".should.equal(instance.b);
     })
 
+    it('add is alisas for register', function () {
+        container.add('x1', 1);
+        container.add('x2', function () {
+            return {result: 2};  
+        });
+
+        container.add('x3', function (x2) {
+            return {result: x2.result + 1};
+        }, ['x2']);
+
+        container.get('x1').should.be.equal(1);
+        container.get('x2').result.should.be.equal(2);
+        container.get('x3').result.should.be.equal(3);
+    });
+
+    it('ability to get service as properties', function () {
+        container.add('x1', 1);
+
+        container.add('test', function (container) {
+            return {result: container.x1};
+        }, ['container']);
+
+        container.get('test').result.should.be.equal(1);
+    })
+
+    it('provide ES6', function () {
+        container.add('a1', 1);
+        container.add('a2', 2);
+        container.add('a3', 3);
+
+        container.provide('test', function (container) {
+            return {a1: container.a1 , a2: container.a2, a3: container.a3};
+        });
+
+        container.get('test').a1.should.be.equal(1);
+        container.get('test').a2.should.be.equal(2);
+        container.get('test').a3.should.be.equal(3);
+    })
+
+    it('provide ES6 with map', function () {
+        container.add('a1', 1);
+        container.add('a2', 2);
+        container.add('a3', 3);
+
+        container.provide('test', function (container) {
+            return {a1: container.a1 , a2: container.a2, a3: container.a3};
+        }, {a1: 'a3'});
+
+        container.get('test').a1.should.be.equal(3);
+        container.get('test').a2.should.be.equal(2);
+        container.get('test').a3.should.be.equal(3);
+    })
 
 });
