@@ -418,11 +418,6 @@ describe('Container', function () {
                 get: function (name) {
                     return name + '-via-get-method'
                 }
-            },
-            name4: {
-                getName1: function () {
-                    return 'returnsValue1'
-                }
             }
         });
 
@@ -432,8 +427,8 @@ describe('Container', function () {
         'value21'.should.equal(container.get('aHash/name2/name21'));
 
         'name-xxx-via-get-method'.should.equal(container.get('aHash/name3/name-xxx'));
-        'returnsValue1'.should.equal(container.get('aHash/name4/name1'));
-        'returnsValue1'.should.equal(container.get('aHash/name4/getName1'));
+        // 'returnsValue1'.should.equal(container.get('aHash/name4/name1'));
+        // 'returnsValue1'.should.equal(container.get('aHash/name4/getName1'));
 
     });
 
@@ -456,11 +451,6 @@ describe('Container', function () {
             name1: 'value1',
             name2: {
                 name21: 'value21'
-            },
-            name3: {
-                setName1: function (value) {
-                    this.name1 = value;
-                }
             }
         };
 
@@ -468,11 +458,9 @@ describe('Container', function () {
 
         container.set('aHash/name1', 'value1-up');
         container.set('aHash/name2/name21', 'value21-updated');
-        container.set('aHash/name3/setName1', 'value3');
 
         "value1-up".should.equal(aHash['name1']);
         "value21-updated".should.equal(aHash['name2']['name21']);
-        "value3".should.equal(aHash['name3']['name1']);
 
     });
 
@@ -580,27 +568,31 @@ describe('Container', function () {
         container.get('child/B').result.should.be.equal(1);
         container.get('B').should.be.equal(75);
     })
-    //
-    // it('ability to use parent service for child container (provide)', function () {
-    //
-    //     var container = require('../lite').create();
-    //     var child = require('../lite').create();
-    //
-    //     container.provide('connect', function (container) {
-    //         return function connect() {
-    //             return {ok: 'ok'};
-    //         };
-    //     });
-    //
-    //     child.provide('B', function (container) {
-    //         console.log(container);
-    //         console.log('container.connect', container.connect);
-    //         return container.connect;
-    //     });
-    //
-    //     container.add('child', child);
-    //     child.get('B')().ok.should.equal('ok');
-    //     // child.get('child/B')().ok.should.equal('ok');
-    // })
+
+    it('ability to use parent service for child container (provide)', function () {
+
+        var container = require('../lite').create();
+        var child = require('../lite').create();
+
+        container.provide('connect', function (container) {
+            return function connect() {
+                return {ok: 'ok'};
+            };
+        });
+
+        child.provide('B', function (container) {
+            return container.connect;
+        });
+
+        container.add('child', child);
+
+        var connect1 = child.get('B');
+        connect1().ok.should.equal('ok');
+        
+        var connect2 = container.get('child/B');
+        connect2().ok.should.equal('ok');
+        
+        connect1.should.be.equal(connect2)
+    })
 
 });

@@ -56,8 +56,6 @@ Container.extend(Container.prototype, {
         return this;
     },
     get: function (name) {
-        // console.log('>get name', name);
-
         // return self
         if (name == 'container') return this;
 
@@ -68,8 +66,6 @@ Container.extend(Container.prototype, {
         // if resolved return
         if (this._resolved.has(name)) return this._resolved.get(name);
 
-        /// @@@
-        // console.log('>>>>> name', name, this._register.has(name));
         // if not registered return null
         if (!this._register.has(name)) {
             if (Container.isFunction(this._parentGetter)) {
@@ -225,11 +221,9 @@ Container.extend(Container.prototype, {
             return parent.get(name);
         };
 
-        // console.log(parent);
-        //
-        // parent._properties.each(function (name) {
-        //     container._defineProperty(name)
-        // });
+        parent._properties.each(function (name) {
+            container._defineProperty(name)
+        });
     },
     _defineParentGetter: function (childContainer) {
         if (Container.isContainer(childContainer)) {
@@ -346,16 +340,6 @@ Container.Accessor = function () {
     this.separator = '/';
 
     this.getters = [function (context, name) {
-        var method = name;
-        if (Container.isFunction(context[method])) {
-            return context[method].call(context);
-        }
-    }, function (context, name) {
-        var method = 'get' + name.charAt(0).toUpperCase() + name.slice(1);
-        if (Container.isFunction(context[method])) {
-            return context[method].call(context);
-        }
-    }, function (context, name) {
         var method = 'get';
         if (Container.isFunction(context[method])) {
             return context[method].call(context, name);
@@ -367,18 +351,6 @@ Container.Accessor = function () {
     }];
 
     this.setters = [function (context, name, value) {
-        var method = name;
-        if (Container.isFunction(context[method])) {
-            context[method].call(context, value);
-            return true;
-        }
-    }, function (context, name, value) {
-        var method = 'set' + name.charAt(0).toUpperCase() + name.slice(1);
-        if (Container.isFunction(context[method])) {
-            context[method].call(context, value);
-            return true;
-        }
-    }, function (context, name, value) {
         var method = 'set';
         if (Container.isFunction(context[method])) {
             context[method].call(context, name, value);
@@ -400,7 +372,6 @@ Container.extend(Container.Accessor.prototype, {
         return ('' + name).indexOf(this.separator) >= 0;
     },
     get: function (context, name) {
-
         if (Container.isObject(context)) {
 
             var names = Container.isArray(name) ? name.slice() : name.split(this.separator);
@@ -411,10 +382,11 @@ Container.extend(Container.Accessor.prototype, {
 
                 var result = undefined;
 
-                Container.each(this.getters, function (getter) {
-                    if (result == undefined)
-                        result = getter(context, name);
-                });
+                for (var i = 0; i < this.getters.length; i++) {
+                    var getter = this.getters[i];
+                    result = getter(context, name);
+                    if (result !== undefined) break;
+                }
 
                 if (Container.isObject(result) && names.length)
                     return this.get(result, names);
