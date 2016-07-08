@@ -60,7 +60,7 @@ When we ask `c` it means that container will inject service `a` and `b` to the `
 It means `c` service will get to arguments `c(a, b)` looks cool :)
 
 #### Dependency injection ES6 way with mapping.
-```
+```javascript
 // exmaple 2 with mapping
 container.add('a', 1);
 container.add('b', 2);
