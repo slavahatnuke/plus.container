@@ -550,5 +550,16 @@ describe('Container', function () {
         container.get('test').a2.should.be.equal(2);
         container.get('test').a3.should.be.equal(3);
     })
+    
+    it('should allow to get pure container', function () {
+        var container = require('../lite').create();
+        container.add('A', 1);
+        container.add('B', function (A) {
+            return {
+                result: A
+            };
+        }, ['A'])
+        container.get('B').result.should.be.equal(1);
+    })
 
 });

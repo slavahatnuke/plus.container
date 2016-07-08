@@ -3,7 +3,7 @@
 https://en.wikipedia.org/wiki/Dependency_injection
 
 That is simple dependency injection container, it allows to keep your application simple and DRY.
-Allows to manage services and inject dependencies.
+Allows to manage services and inject dependencies.  [Article about this](https://medium.com/@slavahatnuke/manage-your-services-node-js-dependency-injection-4412f4f62f84)
 
 ## Simple usage
 
@@ -38,7 +38,7 @@ Behaviour with ES6 is same as ES5 "classes" you can mix ES5 and ES6 services too
 ## ES6 provide/injection and custom mapping
 Examples with dependency injection for ES6/ES2015
 
-#### Dependency injection ES6 way.
+#### Dependency injection ES6.
 ```javascript
 /// example 1 // 
 
@@ -59,20 +59,22 @@ console.log('c', container.c); // container.c it is alias for container.get('c')
 When we ask `c` it means that container will inject service `a` and `b` to the `c` and we will see result.
 It means `c` service will get to arguments `c(a, b)` looks cool :)
 
-#### Dependency injection ES6 way with mapping.
+#### Dependency injection ES6 with mapping.
 ```javascript
 // exmaple 2 with mapping
 container.add('a', 1);
 container.add('b', 2);
 container.add('customA', 7);
 
+let remap = {
+    a: 'customA'
+}
+
 container.provide('c', (({a, b}) => {
     return {
         result: a + b
     };
-}), {
-    a: 'customA'
-});
+}), remap);
 
 
 console.log('c', container.get('c'));
@@ -84,8 +86,6 @@ console.log('c', container.c); // container.c it is alias for container.get('c')
 It means `c` service will get to arguments `c(customA, b)` it means that we can provide custom implementation to `c` service.
 
 ### Register service and use ES5 examples
-
-
 ```javascript
 // define your class
 var MyClass = function () {}
@@ -244,6 +244,11 @@ Have a fun and manage your services!
 
 ### Misc
 
+#### How to use in the browser?
+ ```javascript
+var container =  require('plus.container/lite').create()
+ ```
+ 
 #### Aliases 
 
 ##### Services registration
