@@ -562,4 +562,24 @@ describe('Container', function () {
         container.get('B').result.should.be.equal(1);
     })
 
+    it('ability to use parent service for child container', function () {
+        
+        var container = require('../lite').create();
+        var child = require('../lite').create();
+        
+        container.add('A', 1);
+        container.add('B', 75);
+
+        child.add('B', function (A) {
+            return {
+                result: A
+            };
+        }, ['A'])
+
+        container.add('child', child);
+        
+        container.get('child/B').result.should.be.equal(1);
+        container.get('B').should.be.equal(75);
+    })
+
 });

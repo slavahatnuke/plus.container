@@ -6,7 +6,7 @@ function Container() {
 // Util
 Container.extend = function (dest, src) {
     for (var i in src) dest[i] = src[i];
-}
+};
 
 Container.create = function () {
     return new Container();
@@ -20,22 +20,10 @@ Container.extend(Container.prototype, {
         this._register = new Container.Hash();
         this._dependencies = new Container.Hash();
         this._tags = new Container.Hash();
+        this._parrentGetter = null;
 
         this._accesor = new Container.Accessor();
         this._difiners = new Container.Hash();
-    },
-    _define: function (name) {
-        var container = this;
-
-        if (Container.isFunction(Object.defineProperty) && !container._difiners.has(name)) {
-            container._difiners.set(name, name);
-
-            Object.defineProperty(container, name, {
-                get: function () {
-                    return container.get(name);
-                }
-            });
-        }
     },
     add: function (name, definition, dependencies) {
         return this.register(name, definition, dependencies);
@@ -52,6 +40,7 @@ Container.extend(Container.prototype, {
 
         // clean up
         this.remove(name);
+        this._defineParentGetter(definition);
 
         if (Container.isFunction(definition)) {
             this._register.set(name, definition);
@@ -78,7 +67,12 @@ Container.extend(Container.prototype, {
         if (this._resolved.has(name)) return this._resolved.get(name);
 
         // if not registered return null
-        if (!this._register.has(name)) return null;
+        if (!this._register.has(name)) {
+            if(Container.isFunction(this._parrentGetter)) {
+                return this._parrentGetter(name);
+            }
+            return null;
+        }
 
         // resolve
         this.set(name, this.create(name));
@@ -92,7 +86,19 @@ Container.extend(Container.prototype, {
 
         this._resolved.set(name, definition);
     },
+    _define: function (name) {
+        var container = this;
 
+        if (Container.isFunction(Object.defineProperty) && !container._difiners.has(name)) {
+            container._difiners.set(name, name);
+
+            Object.defineProperty(container, name, {
+                get: function () {
+                    return container.get(name);
+                }
+            });
+        }
+    },
     _createMapInjected: function (name) {
         var _class = this._register.get(name);
         var map = _class.$injectMap || {};
@@ -101,7 +107,7 @@ Container.extend(Container.prototype, {
         var containerWrapper = {};
 
         container._difiners.each(function (name) {
-            if(Container.isFunction(Object.defineProperty)) {
+            if (Container.isFunction(Object.defineProperty)) {
                 Object.defineProperty(containerWrapper, name, {
                     get: function () {
                         var mappedName = map[name] || name;
@@ -138,6 +144,17 @@ Container.extend(Container.prototype, {
 
         // create
         return new creator();
+    },
+    _setParrentGetter: function (getter) {
+        this._parrentGetter = getter;
+    },
+    _defineParentGetter: function (definition) {
+        if (Container.isContainer(definition)) {
+            var container = this;
+            definition._setParrentGetter(function (name) {
+                return container.get(name);
+            });
+        }
     },
     create: function (name) {
 
@@ -205,7 +222,7 @@ Container.extend(Container.prototype, {
 // class Hash
 Container.Hash = function (hash) {
     this._new(hash);
-}
+};
 
 Container.extend(Container.Hash.prototype, {
 
@@ -253,6 +270,9 @@ Container.extend(Container, {
     },
     isObject: function (value) {
         return value instanceof Object;
+    },
+    isContainer: function (value) {
+        return value instanceof Container;
     },
     each: function (hash, fn) {
         if (Container.isArray(hash)) {
@@ -351,7 +371,8 @@ Container.Accessor = function () {
     }];
 
     this._new();
-}
+};
+
 Container.extend(Container.Accessor.prototype, {
     _new: function () {
 
