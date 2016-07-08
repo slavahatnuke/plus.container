@@ -45,7 +45,7 @@ Container.extend(Container.prototype, {
 
         if (Container.isFunction(definition)) {
             this._register.set(name, definition);
-            this._dependencies.set(name, dependencies || definition.$inject);
+            this._dependencies.set(name, dependencies || definition.$inject || []);
             this._tags.set(name, definition.$tags || []);
         }
         else {
@@ -68,7 +68,8 @@ Container.extend(Container.prototype, {
         // if resolved return
         if (this._resolved.has(name)) return this._resolved.get(name);
 
-        // console.log('>>>>> name', name);
+        /// @@@
+        // console.log('>>>>> name', name, this._register.has(name));
         // if not registered return null
         if (!this._register.has(name)) {
             if (Container.isFunction(this._parentGetter)) {
@@ -254,7 +255,7 @@ Container.extend(Container.Hash.prototype, {
         this.hash[name] = value;
     },
     has: function (name) {
-        return this.hash[name] != undefined;
+        return name in this.hash;
     },
     remove: function (name) {
         return this.has(name) && delete this.hash[name];

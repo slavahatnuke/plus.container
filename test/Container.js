@@ -581,26 +581,26 @@ describe('Container', function () {
         container.get('B').should.be.equal(75);
     })
     //
-    // it('ability to use parent service for child container (functions)', function () {
+    // it('ability to use parent service for child container (provide)', function () {
     //
     //     var container = require('../lite').create();
     //     var child = require('../lite').create();
-    //     container.add('child', child);
     //
     //     container.provide('connect', function (container) {
-    //         // console.log(typeof container);
     //         return function connect() {
     //             return {ok: 'ok'};
     //         };
     //     });
     //
     //     child.provide('B', function (container) {
+    //         console.log(container);
     //         console.log('container.connect', container.connect);
     //         return container.connect;
     //     });
     //
-    //     console.log(child.get('B'));
-    //     // console.log(child.get('B'));
+    //     container.add('child', child);
+    //     child.get('B')().ok.should.equal('ok');
+    //     // child.get('child/B')().ok.should.equal('ok');
     // })
 
 });
