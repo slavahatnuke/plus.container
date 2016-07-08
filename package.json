@@ -1,6 +1,6 @@
 {
   "name": "plus.container",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "Dependency Injection Container - plus.container",
   "main": "src/Container.js",
   "homepage": "https://github.com/slavahatnuke/plus.container",
@@ -10,7 +10,7 @@
     "cover": "node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -R spec"
   },
   "author": "slava hatnuke",
-  "license": "BSD",
+  "license": "ISC",
   "devDependencies": {
     "chai": "1.9.1",
     "mocha": "1.18.2",
