@@ -168,7 +168,7 @@ Container.extend(Container.prototype, {
         var container = this;
         var wrapper = {};
 
-        container._properties.each(function (name) {
+        var bind = function (name) {
             if (Container.isFunction(Object.defineProperty)) {
                 Object.defineProperty(wrapper, name, {
                     get: function () {
@@ -177,6 +177,13 @@ Container.extend(Container.prototype, {
                     }
                 });
             }
+        };
+
+        /// @@@ reafactor
+        var Hash = Container.Hash;
+        var props = (new Hash()).merge(new Hash(map)).merge(container._properties);
+        props.each(function (value, name) {
+            bind(name);
         });
 
         return wrapper;
@@ -258,9 +265,17 @@ Container.extend(Container.Hash.prototype, {
         for (var i in this.hash)
             fn(this.hash[i], i);
     },
+    keys: function () {
+        var keys = [];
+        this.each(function (value, key) {
+            keys.push(key);
+        });
+        return keys;
+    },
     merge: function (hash) {
         if (hash instanceof Container.Hash)
             Container.extend(this.hash, hash.hash);
+        return this;
     }
 });
 
