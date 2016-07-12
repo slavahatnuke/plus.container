@@ -1,12 +1,15 @@
 {
   "name": "plus.container",
-  "version": "1.1.15",
+  "version": "1.1.16",
   "description": "Dependency Injection Container - plus.container",
   "main": "src/Container.js",
   "homepage": "https://github.com/slavahatnuke/plus.container",
   "repository" : { "type" : "git" , "url" : "git@github.com:slavahatnuke/plus.container.git"},
   "keywords": [
     "dependency injection",
+    "inversion of control",
+    "IoC",
+    "container",
     "autowire",
     "configuration",
     "di",
