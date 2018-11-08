@@ -82,7 +82,6 @@ Container.extend(Container.prototype, {
                 if (deps.length === 0 && object.$inject.length !== 0) {
                     deps = object.$inject;
                 }
-
                 this.register(name, object, deps || []);
             }
         }
@@ -121,12 +120,10 @@ Container.extend(Container.prototype, {
         return this._createArrayInjected(name);
     },
     remove: function (name) {
-        if (this._register.has(name)) {
-            this._register.remove(name);
-            this._resolved.remove(name);
-            this._dependencies.remove(name);
-            this._tags.remove(name);
-        }
+        this._register.remove(name);
+        this._resolved.remove(name);
+        this._dependencies.remove(name);
+        this._tags.remove(name);
     },
     find: function (include = [], exclude = []) {
         let result = [];
@@ -238,10 +235,7 @@ Container.extend(Container, {
         return Object.prototype.toString.call(value) === '[object Array]';
     },
     isPath: function (name) {
-        return ('' + name).indexOf(this.separator) >= 0;
-    },
-    isObject: function (value) {
-        return value instanceof Object;
+        return ('' + name).indexOf('/') >= 0;
     },
     each: function (hash, fn) {
         if (Container.isArray(hash)) {
