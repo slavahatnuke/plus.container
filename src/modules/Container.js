@@ -26,7 +26,6 @@ Container.extend(Container.prototype, {
         this._register = new Container.Hash();
         this._dependencies = new Container.Hash();
         this._tags = new Container.Hash();
-        this._parentGetter = null;
 
         this._accesor = new Container.Accessor();
         this._properties = new Container.Hash();
@@ -41,8 +40,6 @@ Container.extend(Container.prototype, {
         this.remove(name);
 
         this._defineProperty(name);
-        // todo remove
-        this._defineParentGetter(definition);
 
         if (Container.isFunction(definition)) {
             this._register.set(name, definition);
@@ -79,14 +76,16 @@ Container.extend(Container.prototype, {
 
         // lazy registering
         if (this._resolved.has(name)) {
-            var object = this._resolved.get(name);
+            let object = this._resolved.get(name);
 
             if (this._accesor.isPath(object)) {
                 object = require(object);
-                var deps = this._dependencies.get(name);
+                let deps = this._dependencies.get(name);
+
                 if (deps.length === 0 && object.$inject.length !== 0) {
                     deps = object.$inject;
                 }
+
                 this.register(name, object, deps || []);
             }
         }
@@ -96,9 +95,6 @@ Container.extend(Container.prototype, {
 
         // if not registered return null
         if (!this._register.has(name)) {
-            if (Container.isFunction(this._parentGetter)) {
-                return this._parentGetter(name);
-            }
             return null;
         }
 
@@ -124,11 +120,7 @@ Container.extend(Container.prototype, {
         // null if not a function
         if (!Container.isFunction(_class)) return null;
 
-        if (_class.$injectMap) {
-            return this._createMapInjected(name);
-        } else {
-            return this._createArrayInjected(name);
-        }
+        return this._createArrayInjected(name);
     },
     remove: function (name) {
         if (this._register.has(name)) {
@@ -210,18 +202,6 @@ Container.extend(Container.prototype, {
 
         return wrapper;
     },
-    _createMapInjected: function (name) {
-        var _class = this._register.get(name);
-        var map = _class.$injectMap || {};
-        var wrapper = this._getPropertyContainer(map);
-
-        var args = [wrapper];
-        // make creator with args
-        var creator = Container.makeCreator(_class, args);
-
-        // create
-        return creator();
-    },
     _createArrayInjected: function (name) {
         // get class
         var _class = this._register.get(name);
@@ -243,22 +223,6 @@ Container.extend(Container.prototype, {
         // create
         return new creator();
     },
-    _setParent: function (parent) {
-        var container = this;
-
-        this._parentGetter = function (name) {
-            return parent.get(name);
-        };
-
-        parent._properties.each(function (name) {
-            container._defineProperty(name)
-        });
-    },
-    _defineParentGetter: function (childContainer) {
-        if (Container.isContainer(childContainer)) {
-            childContainer._setParent(this);
-        }
-    }
 });
 
 // class Hash
