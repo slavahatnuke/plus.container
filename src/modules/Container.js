@@ -25,9 +25,11 @@ Container.extend(Container.prototype, {
         this._accesor = new Container.Accessor();
         this._properties = new Container.Hash();
     },
+    // todo remove
     add: function (name, definition, dependencies) {
         return this.register(name, definition, dependencies);
     },
+    // todo remove
     provide: function (name, definition, dependencies) {
         if (Container.isFunction(definition)) {
             definition.$injectMap = dependencies || {};
@@ -41,6 +43,7 @@ Container.extend(Container.prototype, {
         this.remove(name);
 
         this._defineProperty(name);
+        // todo remove
         this._defineParentGetter(definition);
 
         if (Container.isFunction(definition)) {
@@ -55,6 +58,19 @@ Container.extend(Container.prototype, {
         // to chain
         return this;
     },
+    registerLazy: function (name, path, dependencies, tags) {
+        // clean up
+        this.remove(name);
+
+        this._defineProperty(name);
+
+        this._dependencies.set(name, dependencies || []);
+        this._tags.set(name, tags || []);
+        this.set(name, path);
+
+        // to chain
+        return this;
+    },
     get: function (name) {
         // return self
         if (name == 'container') return this;
@@ -62,6 +78,20 @@ Container.extend(Container.prototype, {
         // use accessor
         if (this._accesor.isPath(name))
             return this._accesor.get(this, name);
+
+        // lazy registering
+        if (this._resolved.has(name)) {
+            var object = this._resolved.get(name);
+
+            if (this._accesor.isPath(object)) {
+                object = require(object);
+                var deps = this._dependencies.get(name);
+                if (deps.length === 0 && object.$inject.length !== 0) {
+                    deps = object.$inject;
+                }
+                this.register(name, object, deps || []);
+            }
+        }
 
         // if resolved return
         if (this._resolved.has(name)) return this._resolved.get(name);
@@ -114,6 +144,7 @@ Container.extend(Container.prototype, {
 
         var result = [];
 
+        // todo optimize
         this._tags.each(function (tags, name) {
 
             var found = true;
@@ -154,7 +185,7 @@ Container.extend(Container.prototype, {
 
         if (hasSupport && isNotDefined && isNotOwnMethod) {
             container._properties.set(name, name);
-
+            // todo remove
             Object.defineProperty(container, name, {
                 get: function () {
                     return container.get(name);
@@ -247,6 +278,7 @@ Container.Hash = function (hash) {
 Container.extend(Container.Hash.prototype, {
 
     _new: function (hash) {
+        // todo use Map
         this.hash = hash || {};
     },
     get: function (name) {
