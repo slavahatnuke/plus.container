@@ -1,11 +1,13 @@
 // class Container
-function Container() {
+function Container () {
     this._new();
 }
 
 // Util
 Container.extend = function (dest, src) {
-    for (var i in src) dest[i] = src[i];
+    for (let i in src) {
+        dest[i] = src[i];
+    }
 };
 
 Container.extendMap = function (dest, src) {
@@ -27,15 +29,12 @@ Container.extend(Container.prototype, {
         this._dependencies = new Container.Hash();
         this._tags = new Container.Hash();
 
-        this._accesor = new Container.Accessor();
         this._properties = new Container.Hash();
     },
-    // todo remove
     add: function (name, definition, dependencies) {
         return this.register(name, definition, dependencies);
     },
     register: function (name, definition, dependencies) {
-
         // clean up
         this.remove(name);
 
@@ -68,17 +67,15 @@ Container.extend(Container.prototype, {
     },
     get: function (name) {
         // return self
-        if (name == 'container') return this;
-
-        // use accessor
-        if (this._accesor.isPath(name))
-            return this._accesor.get(this, name);
+        if (name === 'container') {
+            return this;
+        }
 
         // lazy registering
         if (this._resolved.has(name)) {
             let object = this._resolved.get(name);
 
-            if (this._accesor.isPath(object)) {
+            if (typeof object === 'string' && Container.isPath(object)) {
                 object = require(object);
                 let deps = this._dependencies.get(name);
 
@@ -91,7 +88,9 @@ Container.extend(Container.prototype, {
         }
 
         // if resolved return
-        if (this._resolved.has(name)) return this._resolved.get(name);
+        if (this._resolved.has(name)) {
+            return this._resolved.get(name);
+        }
 
         // if not registered return null
         if (!this._register.has(name)) {
@@ -104,21 +103,20 @@ Container.extend(Container.prototype, {
         return this.get(name);
     },
     set: function (name, definition) {
-
-        if (this._accesor.isPath(name))
-            return this._accesor.set(this, name, definition);
-
         this._resolved.set(name, definition);
     },
     create: function (name) {
-
-        if (!this._register.has(name)) return null;
+        if (!this._register.has(name)) {
+            return null;
+        }
 
         // get _class
-        var _class = this._register.get(name);
+        let _class = this._register.get(name);
 
         // null if not a function
-        if (!Container.isFunction(_class)) return null;
+        if (!Container.isFunction(_class)) {
+            return null;
+        }
 
         return this._createArrayInjected(name);
     },
@@ -130,29 +128,24 @@ Container.extend(Container.prototype, {
             this._tags.remove(name);
         }
     },
-    find: function (include, exclude) {
-
-        var self = this;
-
-        var result = [];
+    find: function (include = [], exclude = []) {
+        let result = [];
 
         // todo optimize
-        this._tags.each(function (tags, name) {
+        this._tags.each((tags, name) => {
+            for (let tag of include) {
+                if (tags.indexOf(tag) === -1) {
+                    return;
+                }
+            }
 
-            var found = true;
+            for (let tag of exclude) {
+                if (tags.indexOf(tag) !== -1) {
+                    return;
+                }
+            }
 
-            Container.each(include || [], function (name) {
-                if (tags.indexOf(name) < 0)
-                    found = false;
-            });
-
-            Container.each(exclude || [], function (name) {
-                if (tags.indexOf(name) >= 0)
-                    found = false;
-            });
-
-            if (found)
-                result.push(self.get(name));
+            result.push(this.get(name));
         });
 
         return result;
@@ -178,21 +171,21 @@ Container.extend(Container.prototype, {
     },
     _createArrayInjected: function (name) {
         // get class
-        var _class = this._register.get(name);
+        let _class = this._register.get(name);
 
         // get names
-        var $inject = this._dependencies.has(name) ? this._dependencies.get(name) : [];
+        let $inject = this._dependencies.get(name) || [];
 
         // args collection
-        var args = [];
+        let args = [];
 
         // collect args
-        for (var i = 0; i < $inject.length; i++) {
+        for (let i = 0; i < $inject.length; i++) {
             args.push(this.get($inject[i]));
         }
 
         // make creator with args
-        var creator = Container.makeCreator(_class, args);
+        let creator = Container.makeCreator(_class, args);
 
         // create
         return new creator();
@@ -230,9 +223,8 @@ Container.extend(Container.Hash.prototype, {
         if (hash instanceof Container.Hash)
             Container.extendMap(this.hash, hash.hash);
         return this;
-    }
+    },
 });
-
 
 // Tools
 Container.extend(Container, {
@@ -245,36 +237,28 @@ Container.extend(Container, {
     isArray: function (value) {
         return Object.prototype.toString.call(value) === '[object Array]';
     },
+    isPath: function (name) {
+        return ('' + name).indexOf(this.separator) >= 0;
+    },
     isObject: function (value) {
         return value instanceof Object;
     },
     each: function (hash, fn) {
         if (Container.isArray(hash)) {
-            for (var i = 0; i < hash.length; i++)
+            for (let i = 0; i < hash.length; i++) {
                 fn(hash[i], i);
-        }
-        else {
+            }
+        } else {
             new Container.Hash(hash).each(fn);
         }
     },
     makeCreator: function (_class, _args) {
         if (Container.isClass(_class)) {
-
-            var bind = function () {
-
-                var a = _args
-                    .map(function (value, idx) {
-                        return '_args[' + idx + ']';
-                    })
-                    .join(', ');
-
-                return eval('new _class(' + a + ')');
+            return function () {
+                return new _class(..._args);
             };
-
-            return bind;
-
         } else {
-            function bind() {
+            function bind () {
                 return _class.apply(this, _args);
             }
 
@@ -283,105 +267,6 @@ Container.extend(Container, {
             return bind;
         }
     },
-    bind: function (_class, args) {
-
-        function bind() {
-            return _class.apply(this, args);
-        }
-
-        bind.prototype = _class.prototype;
-
-        return bind;
-    }
-});
-
-
-// Accessor
-Container.Accessor = function () {
-    this.separator = '/';
-
-    this.getters = [function (context, name) {
-        var method = 'get';
-        if (Container.isFunction(context[method])) {
-            return context[method].call(context, name);
-        }
-    }, function (context, name) {
-        if (context[name]) {
-            return context[name];
-        }
-    }];
-
-    this.setters = [function (context, name, value) {
-        var method = 'set';
-        if (Container.isFunction(context[method])) {
-            context[method].call(context, name, value);
-            return true;
-        }
-    }, function (context, name, value) {
-        context[name] = value;
-        return true;
-    }];
-
-    this._new();
-};
-
-Container.extend(Container.Accessor.prototype, {
-    _new: function () {
-
-    },
-    isPath: function (name) {
-        return ('' + name).indexOf(this.separator) >= 0;
-    },
-    get: function (context, name) {
-        if (Container.isObject(context)) {
-
-            var names = Container.isArray(name) ? name.slice() : name.split(this.separator);
-
-            if (names.length) {
-
-                var name = names.shift();
-
-                var result = undefined;
-
-                for (var i = 0; i < this.getters.length; i++) {
-                    var getter = this.getters[i];
-                    result = getter(context, name);
-                    if (result !== undefined) break;
-                }
-
-                if (Container.isObject(result) && names.length)
-                    return this.get(result, names);
-
-                return result;
-            }
-        }
-
-        return undefined;
-    },
-    set: function (context, name, value) {
-
-        if (Container.isObject(context)) {
-
-            var names = Container.isArray(name) ? name.slice() : name.split(this.separator);
-            var name = names.pop();
-            var result = this.get(context, names);
-
-
-            var done = false;
-
-            if (Container.isObject(result)) {
-                Container.each(this.setters, function (setter) {
-                    if (!done && setter(result, name, value)) {
-                        done = true;
-                    }
-                });
-            }
-            else {
-                // can not set
-            }
-
-        }
-    }
 });
 
 module.exports = Container;
