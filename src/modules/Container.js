@@ -176,32 +176,6 @@ Container.extend(Container.prototype, {
             this._properties.set(name, name);
         }
     },
-    _getPropertyContainer: function (map) {
-        map = map || {};
-
-        var container = this;
-        var wrapper = {};
-
-        var bind = function (name) {
-            if (Container.isFunction(Object.defineProperty)) {
-                Object.defineProperty(wrapper, name, {
-                    get: function () {
-                        var mappedName = map[name] || name;
-                        return container.get(mappedName);
-                    }
-                });
-            }
-        };
-
-        /// @@@ reafactor
-        var Hash = Container.Hash;
-        var props = (new Hash()).merge(new Hash(map)).merge(container._properties);
-        props.each(function (value, name) {
-            bind(name);
-        });
-
-        return wrapper;
-    },
     _createArrayInjected: function (name) {
         // get class
         var _class = this._register.get(name);
@@ -271,16 +245,8 @@ Container.extend(Container, {
     isArray: function (value) {
         return Object.prototype.toString.call(value) === '[object Array]';
     },
-    isPureObject: function (value) {
-        return Container.isObject(value)
-            && !Container.isArray(value)
-            && !Container.isFunction(value);
-    },
     isObject: function (value) {
         return value instanceof Object;
-    },
-    isContainer: function (value) {
-        return value instanceof Container;
     },
     each: function (hash, fn) {
         if (Container.isArray(hash)) {
