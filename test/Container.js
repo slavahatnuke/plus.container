@@ -397,73 +397,6 @@ describe('Container', function () {
         container1.get('y').should.equal(2);
     })
 
-    it('should allow to get nested values', function () {
-
-        var container = new Container();
-
-        var config = {
-            get: function (name) {
-                return name + '-value';
-            }
-        };
-
-        container.register('config', config);
-
-        container.register('aHash', {
-            name1: 'value1',
-            name2: {
-                name21: 'value21'
-            },
-            name3: {
-                get: function (name) {
-                    return name + '-via-get-method'
-                }
-            }
-        });
-
-        'name1-value'.should.equal(container.get('config/name1'));
-
-        'value1'.should.equal(container.get('aHash/name1'));
-        'value21'.should.equal(container.get('aHash/name2/name21'));
-
-        'name-xxx-via-get-method'.should.equal(container.get('aHash/name3/name-xxx'));
-        // 'returnsValue1'.should.equal(container.get('aHash/name4/name1'));
-        // 'returnsValue1'.should.equal(container.get('aHash/name4/getName1'));
-
-    });
-
-    it('should allow to set nested values', function () {
-
-        var container = new Container();
-
-        var config = {
-            set: function (name, value) {
-                return this['xxx-' + name] = value;
-            }
-        };
-
-        container.register('config', config);
-        container.set('config/name1', 'value1');
-
-        "value1".should.equal(config['xxx-name1']);
-
-        var aHash = {
-            name1: 'value1',
-            name2: {
-                name21: 'value21'
-            }
-        };
-
-        container.register('aHash', aHash);
-
-        container.set('aHash/name1', 'value1-up');
-        container.set('aHash/name2/name21', 'value21-updated');
-
-        "value1-up".should.equal(aHash['name1']);
-        "value21-updated".should.equal(aHash['name2']['name21']);
-
-    });
-
     it('should support es6 class', function () {
         "use strict";
 
@@ -501,44 +434,6 @@ describe('Container', function () {
         container.get('x3').result.should.be.equal(3);
     });
 
-    it('ability to get service as properties', function () {
-        container.add('x1', 1);
-
-        container.add('test', function (container) {
-            return {result: container.x1};
-        }, ['container']);
-
-        container.get('test').result.should.be.equal(1);
-    })
-
-    it('provide ES6', function () {
-        container.add('a1', 1);
-        container.add('a2', 2);
-        container.add('a3', 3);
-
-        container.provide('test', function (container) {
-            return {a1: container.a1 , a2: container.a2, a3: container.a3};
-        });
-
-        container.get('test').a1.should.be.equal(1);
-        container.get('test').a2.should.be.equal(2);
-        container.get('test').a3.should.be.equal(3);
-    })
-
-    it('provide ES6 with map', function () {
-        container.add('a1', 1);
-        container.add('a2', 2);
-        container.add('a3', 3);
-
-        container.provide('test', function (container) {
-            return {a1: container.a1 , a2: container.a2, a3: container.a3};
-        }, {a1: 'a3'});
-
-        container.get('test').a1.should.be.equal(3);
-        container.get('test').a2.should.be.equal(2);
-        container.get('test').a3.should.be.equal(3);
-    })
-
     it('should allow to get pure container', function () {
         var container = require('../lite').create();
         container.add('A', 1);
@@ -548,51 +443,6 @@ describe('Container', function () {
             };
         }, ['A'])
         container.get('B').result.should.be.equal(1);
-    })
-
-    it('ability to use parent service for child container', function () {
-
-        var container = require('../lite').create();
-        var child = require('../lite').create();
-        container.add('child', child);
-
-        container.add('A', 1);
-        container.add('B', 75);
-
-        child.add('B', function (A) {
-            return {
-                result: A
-            };
-        }, ['A'])
-
-        container.get('child/B').result.should.be.equal(1);
-        container.get('B').should.be.equal(75);
-    })
-
-    it('ability to use parent service for child container (provide)', function () {
-
-        var container = require('../lite').create();
-        var child = require('../lite').create();
-
-        container.provide('connect', function (container) {
-            return function connect() {
-                return {ok: 'ok'};
-            };
-        });
-
-        child.provide('B', function (container) {
-            return container.connect;
-        });
-
-        container.add('child', child);
-
-        var connect1 = child.get('B');
-        connect1().ok.should.equal('ok');
-        
-        var connect2 = container.get('child/B');
-        connect2().ok.should.equal('ok');
-        
-        connect1.should.be.equal(connect2)
     })
 
 });
