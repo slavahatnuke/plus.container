@@ -8,6 +8,12 @@ Container.extend = function (dest, src) {
     for (var i in src) dest[i] = src[i];
 };
 
+Container.extendMap = function (dest, src) {
+    for (let [key, value] of src) {
+        dest.set(key, value);
+    }
+};
+
 Container.create = function () {
     return new Container();
 };
@@ -28,14 +34,6 @@ Container.extend(Container.prototype, {
     // todo remove
     add: function (name, definition, dependencies) {
         return this.register(name, definition, dependencies);
-    },
-    // todo remove
-    provide: function (name, definition, dependencies) {
-        if (Container.isFunction(definition)) {
-            definition.$injectMap = dependencies || {};
-        }
-
-        return this.register(name, definition, ['container']);
     },
     register: function (name, definition, dependencies) {
 
@@ -133,10 +131,12 @@ Container.extend(Container.prototype, {
         }
     },
     remove: function (name) {
-        this._register.remove(name);
-        this._resolved.remove(name);
-        this._dependencies.remove(name);
-        this._tags.remove(name);
+        if (this._register.has(name)) {
+            this._register.remove(name);
+            this._resolved.remove(name);
+            this._dependencies.remove(name);
+            this._tags.remove(name);
+        }
     },
     find: function (include, exclude) {
 
@@ -177,20 +177,11 @@ Container.extend(Container.prototype, {
         this.merge(Container.load(options));
     },
     _defineProperty: function (name) {
-        var container = this;
+        let isNotDefined = !this._properties.has(name);
+        let isNotOwnMethod = !this[name] || true;
 
-        var hasSupport = Container.isFunction(Object.defineProperty);
-        var isNotDefined = !container._properties.has(name);
-        var isNotOwnMethod = !container[name] || true;
-
-        if (hasSupport && isNotDefined && isNotOwnMethod) {
-            container._properties.set(name, name);
-            // todo remove
-            Object.defineProperty(container, name, {
-                get: function () {
-                    return container.get(name);
-                }
-            });
+        if (isNotDefined && isNotOwnMethod) {
+            this._properties.set(name, name);
         }
     },
     _getPropertyContainer: function (map) {
@@ -278,35 +269,28 @@ Container.Hash = function (hash) {
 Container.extend(Container.Hash.prototype, {
 
     _new: function (hash) {
-        // todo use Map
-        this.hash = hash || {};
+        this.hash = hash || new Map();
     },
     get: function (name) {
-        return this.has(name) ? this.hash[name] : null;
+        return this.has(name) ? this.hash.get(name) : null;
     },
     set: function (name, value) {
-        this.hash[name] = value;
+        this.hash.set(name, value);
     },
     has: function (name) {
-        return name in this.hash;
+        return this.hash.has(name);
     },
     remove: function (name) {
-        return this.has(name) && delete this.hash[name];
+        return this.has(name) && this.hash.delete(name);
     },
     each: function (fn) {
-        for (var i in this.hash)
-            fn(this.hash[i], i);
-    },
-    keys: function () {
-        var keys = [];
-        this.each(function (value, key) {
-            keys.push(key);
-        });
-        return keys;
+        for (let [name, tags] of this.hash) {
+            fn(tags, name);
+        }
     },
     merge: function (hash) {
         if (hash instanceof Container.Hash)
-            Container.extend(this.hash, hash.hash);
+            Container.extendMap(this.hash, hash.hash);
         return this;
     }
 });
