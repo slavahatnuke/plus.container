@@ -128,7 +128,6 @@ Container.extend(Container.prototype, {
     find: function (include = [], exclude = []) {
         let result = [];
 
-        // todo optimize
         this._tags.each((tags, name) => {
             for (let tag of include) {
                 if (tags.indexOf(tag) === -1) {
