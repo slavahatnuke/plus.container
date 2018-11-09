@@ -26,7 +26,7 @@ Container.extend(Container.prototype, {
     _new: function () {
         this._resolved = new Container.Hash();
         this._register = new Container.Hash();
-        this._fabrics = new Container.Hash();
+        this._factories = new Container.Hash();
         this._dependencies = new Container.Hash();
         this._tags = new Container.Hash();
     },
@@ -54,10 +54,10 @@ Container.extend(Container.prototype, {
         // to chain
         return this;
     },
-    registerLazyFabric: function (name, path, dependencies, tags) {
+    registerLazyFactory: function (name, path, dependencies, tags) {
         this._dependencies.set(name, dependencies || []);
         this._tags.set(name, tags || []);
-        this._fabrics.set(name, path);
+        this._factories.set(name, path);
 
         // to chain
         return this;
@@ -69,10 +69,10 @@ Container.extend(Container.prototype, {
         }
 
         // lazy registering
-        if (this._resolved.has(name) || this._fabrics.has(name)) {
+        if (this._resolved.has(name) || this._factories.has(name)) {
             let object = this._resolved.get(name);
             if (!object) {
-                object = this._fabrics.get(name);
+                object = this._factories.get(name);
             }
 
             if (typeof object === 'string' && Container.isPath(object)) {
@@ -107,8 +107,8 @@ Container.extend(Container.prototype, {
         this._resolved.set(name, definition);
     },
     create: function (name) {
-        if (this._fabrics.has(name)) {
-            return this._createFromFabric(name);
+        if (this._factories.has(name)) {
+            return this._createFromFactory(name);
         }
 
         if (!this._register.has(name)) {
@@ -181,7 +181,7 @@ Container.extend(Container.prototype, {
         // create
         return new _class(...args);
     },
-    _createFromFabric: function (name) {
+    _createFromFactory: function (name) {
         // get class
         let _class = this._register.get(name);
 
