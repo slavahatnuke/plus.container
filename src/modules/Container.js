@@ -34,13 +34,11 @@ Container.extend(Container.prototype, {
     add: function (name, definition, dependencies) {
         return this.register(name, definition, dependencies);
     },
-    register: function (name, definition, dependencies, clear = true) {
+    register: function (name, definition, dependencies) {
         // clean up
-        if (clear) {
-            this.remove(name);
-        }
+        // this.remove(name);
 
-        this._defineProperty(name);
+        // this._defineProperty(name);
 
         if (Container.isFunction(definition)) {
             this._register.set(name, definition);
@@ -58,7 +56,7 @@ Container.extend(Container.prototype, {
         // clean up
         // this.remove(name);
 
-        this._defineProperty(name);
+        // this._defineProperty(name);
 
         this._dependencies.set(name, dependencies || []);
         this._tags.set(name, tags || []);
@@ -85,7 +83,8 @@ Container.extend(Container.prototype, {
                     deps = object.$inject;
                 }
 
-                this.register(name, object, deps || [], false);
+                this.register(name, object, deps || []);
+                this._resolved.remove(name)
             }
         }
 
@@ -161,10 +160,10 @@ Container.extend(Container.prototype, {
         this.merge(Container.load(options));
     },
     _defineProperty: function (name) {
-        let isNotDefined = !this._properties.has(name);
+        // let isNotDefined = !this._properties.has(name);
         let isNotOwnMethod = !this[name] || true;
 
-        if (isNotDefined && isNotOwnMethod) {
+        if (isNotOwnMethod) {
             this._properties.set(name, name);
         }
     },
