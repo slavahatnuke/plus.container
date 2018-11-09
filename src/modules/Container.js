@@ -79,7 +79,7 @@ Container.extend(Container.prototype, {
                 object = require(object);
                 let deps = this._dependencies.get(name);
 
-                if (deps.length === 0 && object.$inject.length !== 0) {
+                if (deps.length === 0 && object.$inject && object.$inject.length !== 0) {
                     deps = object.$inject;
                 }
                 this.register(name, object, deps || []);
