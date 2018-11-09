@@ -35,11 +35,6 @@ Container.extend(Container.prototype, {
         return this.register(name, definition, dependencies);
     },
     register: function (name, definition, dependencies) {
-        // clean up
-        // this.remove(name);
-
-        // this._defineProperty(name);
-
         if (Container.isFunction(definition)) {
             this._register.set(name, definition);
             this._dependencies.set(name, dependencies || definition.$inject || []);
@@ -53,11 +48,6 @@ Container.extend(Container.prototype, {
         return this;
     },
     registerLazy: function (name, path, dependencies, tags) {
-        // clean up
-        // this.remove(name);
-
-        // this._defineProperty(name);
-
         this._dependencies.set(name, dependencies || []);
         this._tags.set(name, tags || []);
         this.set(name, path);
@@ -83,8 +73,8 @@ Container.extend(Container.prototype, {
                     deps = object.$inject;
                 }
 
+                this.remove(name);
                 this.register(name, object, deps || []);
-                this._resolved.remove(name)
             }
         }
 
