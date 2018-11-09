@@ -26,10 +26,9 @@ Container.extend(Container.prototype, {
     _new: function () {
         this._resolved = new Container.Hash();
         this._register = new Container.Hash();
+        this._fabrics = new Container.Hash();
         this._dependencies = new Container.Hash();
         this._tags = new Container.Hash();
-
-        this._properties = new Container.Hash();
     },
     add: function (name, definition, dependencies) {
         return this.register(name, definition, dependencies);
@@ -48,6 +47,14 @@ Container.extend(Container.prototype, {
         return this;
     },
     registerLazy: function (name, path, dependencies, tags) {
+        this._dependencies.set(name, dependencies || []);
+        this._tags.set(name, tags || []);
+        this._fabrics.set(name, path);
+
+        // to chain
+        return this;
+    },
+    registerLazyFabric: function (name, path, dependencies, tags) {
         this._dependencies.set(name, dependencies || []);
         this._tags.set(name, tags || []);
         this.set(name, path);
@@ -97,6 +104,10 @@ Container.extend(Container.prototype, {
         this._resolved.set(name, definition);
     },
     create: function (name) {
+        if (!this._register.has(name) && this._fabrics.has(name)) {
+            return this._createFromFabric(name);
+        }
+
         if (!this._register.has(name)) {
             return null;
         }
@@ -167,6 +178,30 @@ Container.extend(Container.prototype, {
         // create
         return new _class(...args);
     },
+    _createFromFabric: function (name) {
+        // get class
+        let _class = this._fabrics.get(name);
+
+        // get names
+        let $inject = this._dependencies.get(name) || [];
+
+        // args collection
+        let args = [];
+
+        // collect args
+        for (let injection of $inject) {
+            args.push(this.get(injection));
+        }
+
+        // create
+        function Bind () {
+            return _class.apply(this, args);
+        }
+
+        Bind.prototype = _class.prototype;
+
+        return Bind;
+    },
 });
 
 // class Hash
@@ -218,7 +253,7 @@ Container.extend(Container, {
         for (let i = 0; i < hash.length; i++) {
             fn(hash[i], i);
         }
-    }
+    },
 });
 
 module.exports = Container;
