@@ -107,7 +107,7 @@ Container.extend(Container.prototype, {
         this._resolved.set(name, definition);
     },
     create: function (name) {
-        if (!this._register.has(name) && this._fabrics.has(name)) {
+        if (this._fabrics.has(name)) {
             return this._createFromFabric(name);
         }
 
@@ -183,7 +183,7 @@ Container.extend(Container.prototype, {
     },
     _createFromFabric: function (name) {
         // get class
-        let _class = this._fabrics.get(name);
+        let _class = this._register.get(name);
 
         // get names
         let $inject = this._dependencies.get(name) || [];
@@ -203,7 +203,8 @@ Container.extend(Container.prototype, {
 
         Bind.prototype = _class.prototype;
 
-        return Bind;
+        console.log(_class)
+        return Bind();
     },
 });
 
