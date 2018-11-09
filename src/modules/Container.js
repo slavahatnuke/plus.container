@@ -237,12 +237,8 @@ Container.extend(Container, {
         return ('' + name).indexOf('/') >= 0;
     },
     each: function (hash, fn) {
-        if (Container.isArray(hash)) {
-            for (let i = 0; i < hash.length; i++) {
-                fn(hash[i], i);
-            }
-        } else {
-            new Container.Hash(hash).each(fn);
+        for (let i = 0; i < hash.length; i++) {
+            fn(hash[i], i);
         }
     },
     makeCreator: function (_class, _args) {
@@ -250,15 +246,15 @@ Container.extend(Container, {
             return function () {
                 return new _class(..._args);
             };
-        } else {
-            function bind () {
-                return _class.apply(this, _args);
-            }
-
-            bind.prototype = _class.prototype;
-
-            return bind;
         }
+
+        function Bind () {
+            return _class.apply(this, _args);
+        }
+
+        Bind.prototype = _class.prototype;
+
+        return Bind;
     },
 });
 
