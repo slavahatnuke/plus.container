@@ -34,9 +34,11 @@ Container.extend(Container.prototype, {
     add: function (name, definition, dependencies) {
         return this.register(name, definition, dependencies);
     },
-    register: function (name, definition, dependencies) {
+    register: function (name, definition, dependencies, clear = true) {
         // clean up
-        this.remove(name);
+        if (clear) {
+            this.remove(name);
+        }
 
         this._defineProperty(name);
 
@@ -54,7 +56,7 @@ Container.extend(Container.prototype, {
     },
     registerLazy: function (name, path, dependencies, tags) {
         // clean up
-        this.remove(name);
+        // this.remove(name);
 
         this._defineProperty(name);
 
@@ -82,7 +84,8 @@ Container.extend(Container.prototype, {
                 if (deps.length === 0 && object.$inject && object.$inject.length !== 0) {
                     deps = object.$inject;
                 }
-                this.register(name, object, deps || []);
+
+                this.register(name, object, deps || [], false);
             }
         }
 
