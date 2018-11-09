@@ -49,7 +49,7 @@ Container.extend(Container.prototype, {
     registerLazy: function (name, path, dependencies, tags) {
         this._dependencies.set(name, dependencies || []);
         this._tags.set(name, tags || []);
-        this._fabrics.set(name, path);
+        this.set(name, path);
 
         // to chain
         return this;
@@ -57,7 +57,7 @@ Container.extend(Container.prototype, {
     registerLazyFabric: function (name, path, dependencies, tags) {
         this._dependencies.set(name, dependencies || []);
         this._tags.set(name, tags || []);
-        this.set(name, path);
+        this._fabrics.set(name, path);
 
         // to chain
         return this;
@@ -69,8 +69,11 @@ Container.extend(Container.prototype, {
         }
 
         // lazy registering
-        if (this._resolved.has(name)) {
+        if (this._resolved.has(name) || this._fabrics.has(name)) {
             let object = this._resolved.get(name);
+            if (!object) {
+                object = this._fabrics.get(name);
+            }
 
             if (typeof object === 'string' && Container.isPath(object)) {
                 object = require(object);
