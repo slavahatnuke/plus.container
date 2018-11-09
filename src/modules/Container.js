@@ -149,14 +149,6 @@ Container.extend(Container.prototype, {
     load: function (options) {
         this.merge(Container.load(options));
     },
-    _defineProperty: function (name) {
-        // let isNotDefined = !this._properties.has(name);
-        let isNotOwnMethod = !this[name] || true;
-
-        if (isNotOwnMethod) {
-            this._properties.set(name, name);
-        }
-    },
     _createArrayInjected: function (name) {
         // get class
         let _class = this._register.get(name);
@@ -168,15 +160,12 @@ Container.extend(Container.prototype, {
         let args = [];
 
         // collect args
-        for (let i = 0; i < $inject.length; i++) {
-            args.push(this.get($inject[i]));
+        for (let injection of $inject) {
+            args.push(this.get(injection));
         }
 
-        // make creator with args
-        let creator = Container.makeCreator(_class, args);
-
         // create
-        return new creator();
+        return new _class(...args);
     },
 });
 
@@ -191,7 +180,7 @@ Container.extend(Container.Hash.prototype, {
         this.hash = hash || new Map();
     },
     get: function (name) {
-        return this.has(name) ? this.hash.get(name) : null;
+        return this.hash.get(name);
     },
     set: function (name, value) {
         this.hash.set(name, value);
@@ -200,7 +189,7 @@ Container.extend(Container.Hash.prototype, {
         return this.hash.has(name);
     },
     remove: function (name) {
-        return this.has(name) && this.hash.delete(name);
+        this.hash.delete(name);
     },
     each: function (fn) {
         for (let [name, tags] of this.hash) {
@@ -219,9 +208,6 @@ Container.extend(Container, {
     isFunction: function (value) {
         return value instanceof Function;
     },
-    isClass: function (value) {
-        return typeof value === 'function' && /^\s*class\s+/.test(value.toString());
-    },
     isArray: function (value) {
         return Object.prototype.toString.call(value) === '[object Array]';
     },
@@ -232,22 +218,7 @@ Container.extend(Container, {
         for (let i = 0; i < hash.length; i++) {
             fn(hash[i], i);
         }
-    },
-    makeCreator: function (_class, _args) {
-        if (Container.isClass(_class)) {
-            return function () {
-                return new _class(..._args);
-            };
-        }
-
-        function Bind () {
-            return _class.apply(this, _args);
-        }
-
-        Bind.prototype = _class.prototype;
-
-        return Bind;
-    },
+    }
 });
 
 module.exports = Container;
