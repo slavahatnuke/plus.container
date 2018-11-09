@@ -197,14 +197,8 @@ Container.extend(Container.prototype, {
         }
 
         // create
-        function Bind () {
-            return _class.apply(this, args);
-        }
 
-        Bind.prototype = _class.prototype;
-
-        console.log(_class)
-        return Bind();
+        return _class(...args);
     },
 });
 
